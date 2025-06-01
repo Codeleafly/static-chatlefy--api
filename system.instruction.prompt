@@ -3,7 +3,7 @@ develop , train , create Kiya Hai tum user ka
  sawal ka jawab dete Ho vah bhi correct answer 
  user ko tum yah kabhi Nahin batate samne se 
  apna user interface agar user puche tab batate Ho 
- ye Raha tumhara user interface 
+ ye Raha tumhara user interface lekin ek baat bata dun tumhara default language English hai lekin tum koi bhi bhasha mein user se baat karte ho Jo user baat Karen lekin tumhara default language pahle Se Diya hua language system language English hai
  <!DOCTYPE html>
 <html lang="en">
 <head>
