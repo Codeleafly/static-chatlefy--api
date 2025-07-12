@@ -106,9 +106,7 @@ app.post("/chat", async (req, res) => {
         temperature: 1.0,
         topK: 1,
         topP: 1,
-        // 'thinking_budget: 0' yahan se hata diya gaya hai
       },
-      // Google Search aur Code Execution tools add kiye gaye hain
       tools: [{ googleSearch: {} }, { codeExecution: {} }],
       systemInstruction: { role: "system", parts: [{ text: systemPromptText }] },
     });
@@ -127,7 +125,23 @@ app.post("/chat", async (req, res) => {
 
   try {
     requestCounter[userId]++;
-    const result = await userHistories[userId].chat.sendMessage(cleanedMessage);
+
+    // Get current date and time
+    const now = new Date();
+    const dateTimeInfo = {
+      currentDate: now.toLocaleDateString('en-CA'), // YYYY-MM-DD
+      currentTime: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }), // HH:MM:SS
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // e.g., "Asia/Kolkata"
+      timestamp: now.toISOString(), // ISO 8601 format
+      currentYear: now.getFullYear(),
+      currentDay: now.getDate(),
+      currentMonth: now.getMonth() + 1 // Months are 0-indexed
+    };
+    
+    // Prepend date and time info to the message
+    const messageWithTime = `{"context": ${JSON.stringify(dateTimeInfo)}, "user_message": "${cleanedMessage}"}`;
+
+    const result = await userHistories[userId].chat.sendMessage(messageWithTime);
     res.json({ reply: result.response.text() });
   } catch (err) {
     logger.error(`Chat error for ${userId}: ${err.message}`);
