@@ -6,8 +6,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const crypto = require("crypto");
 const winston = require("winston");
-// === Corrected: Using the latest and recommended SDK: @google/genai ===
-const { GoogleGenerativeAI } = require("@google/genai");
+// === FINAL FIX: Correct way to require GoogleGenerativeAI from @google/genai ===
+const GoogleGenerativeAI = require("@google/genai");
 
 // === Logger Setup ===
 const logDir = path.join(__dirname, "logs");
@@ -62,7 +62,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // === AI Setup ===
-// === Corrected: Initializing with the latest SDK: @google/genai ===
+// === Corrected: Initializing with the correctly required GoogleGenerativeAI ===
 const ai = new GoogleGenerativeAI(API_KEY);
 const SYSTEM_PROMPT_PATH = path.join(__dirname, "system.instruction.prompt");
 let systemPromptText = "You are Chatlefy, an AI assistant made by Smart Tell Line...";
