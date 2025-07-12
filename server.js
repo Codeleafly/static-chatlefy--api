@@ -6,8 +6,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const crypto = require("crypto");
 const winston = require("winston");
-// === FINAL FIX: Correct way to require GoogleGenerativeAI from @google/genai ===
-const GoogleGenerativeAI = require("@google/genai");
+// === FINAL FIX: Correct class name and import as per your analysis ===
+const { GoogleGenAI } = require("@google/genai"); // <--- Class name corrected here
 
 // === Logger Setup ===
 const logDir = path.join(__dirname, "logs");
@@ -62,8 +62,8 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // === AI Setup ===
-// === Corrected: Initializing with the correctly required GoogleGenerativeAI ===
-const ai = new GoogleGenerativeAI(API_KEY);
+// === Corrected: Initializing with the correct class name GoogleGenAI ===
+const ai = new GoogleGenAI({ apiKey: API_KEY }); // <--- Corrected constructor call as per your example
 const SYSTEM_PROMPT_PATH = path.join(__dirname, "system.instruction.prompt");
 let systemPromptText = "You are Chatlefy, an AI assistant made by Smart Tell Line...";
 if (fs.existsSync(SYSTEM_PROMPT_PATH)) {
