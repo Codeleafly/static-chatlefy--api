@@ -6,8 +6,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const crypto = require("crypto");
 const winston = require("winston");
-// === FINAL FIX: Correct class name and import as per your analysis ===
-const { GoogleGenAI } = require("@google/genai"); // <--- Class name corrected here
+// === Corrected: Using the latest and recommended SDK: @google/genai ===
+const { GoogleGenAI } = require("@google/genai");
 
 // === Logger Setup ===
 const logDir = path.join(__dirname, "logs");
@@ -62,8 +62,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // === AI Setup ===
-// === Corrected: Initializing with the correct class name GoogleGenAI ===
-const ai = new GoogleGenAI({ apiKey: API_KEY }); // <--- Corrected constructor call as per your example
+const ai = new GoogleGenAI({ apiKey: API_KEY }); // Corrected constructor call
 const SYSTEM_PROMPT_PATH = path.join(__dirname, "system.instruction.prompt");
 let systemPromptText = "You are Chatlefy, an AI assistant made by Smart Tell Line...";
 if (fs.existsSync(SYSTEM_PROMPT_PATH)) {
@@ -102,24 +101,20 @@ app.post("/chat", async (req, res) => {
   }
 
   if (isFirstAccess && isCorrectPassword) {
-    const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
+    // === NEW SDK APPROACH: Using ai.chats.create for chat session ===
+    const chat = ai.chats.create({
+      model: "gemini-2.5-flash", // Using the model you specified
+      config: {
+        systemInstruction: systemPromptText, // systemInstruction now goes inside config
         temperature: 1.0,
         topK: 1,
         topP: 1,
+        thinkingConfig: { thinkingBudget: 0 }, // thinkingConfig goes inside config
+        tools: [{ googleSearch: {} }, { codeExecution: {} }], // tools also inside config
       },
-      // === Thinking budget remains 0 as requested ===
-      thinkingConfig: {
-        thinkingBudget: 0,
-      },
-      // === Tools configuration: This is correct for @google/genai SDK ===
-      tools: [{ googleSearch: {} }, { codeExecution: {} }],
-      systemInstruction: { role: "system", parts: [{ text: systemPromptText }] },
     });
 
-    const chat = model.startChat({ history: [] });
-    userHistories[userId] = { model, chat };
+    userHistories[userId] = { chat }; // Only store the chat object
     requestCounter[userId] = 0;
     logger.info(`User ${userId} authenticated and chat session started.`);
     return res.json({ reply: "Access granted. You can now start chatting." });
@@ -148,8 +143,9 @@ app.post("/chat", async (req, res) => {
     // Prepend date and time info to the message
     const messageWithTime = `{"context": ${JSON.stringify(dateTimeInfo)}, "user_message": "${cleanedMessage}"}`;
 
-    const result = await userHistories[userId].chat.sendMessage(messageWithTime);
-    res.json({ reply: result.response.text() });
+    // === NEW SDK APPROACH: Using chat.sendMessage with message object ===
+    const result = await userHistories[userId].chat.sendMessage({ message: messageWithTime });
+    res.json({ reply: result.text }); // result.text instead of result.response.text()
   } catch (err) {
     logger.error(`Chat error for ${userId}: ${err.message}`);
     res.status(500).json({ reply: "Chatlefy is currently unavailable." });
