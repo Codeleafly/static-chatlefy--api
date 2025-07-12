@@ -100,21 +100,18 @@ app.post("/chat", async (req, res) => {
   }
 
   if (isFirstAccess && isCorrectPassword) {
-    // === Changes Start Here ===
     const model = ai.getGenerativeModel({
       model: "gemini-2.5-flash",
-      generationConfig: { 
-        temperature: 2.0, 
-        topK: 1, 
+      generationConfig: {
+        temperature: 2.0,
+        topK: 1,
         topP: 1,
-        // Thinking budget ko 0 set kiya hai
-        thinking_budget: 0 
+        // 'thinking_budget: 0' yahan se hata diya gaya hai
       },
-      // Google Search aur Code Execution tools add kiye hain
-      tools: [{ googleSearch: {} }, { codeExecution: {} }], 
+      // Google Search aur Code Execution tools add kiye gaye hain
+      tools: [{ googleSearch: {} }, { codeExecution: {} }],
       systemInstruction: { role: "system", parts: [{ text: systemPromptText }] },
     });
-    // === Changes End Here ===
 
     const chat = model.startChat({ history: [] });
     userHistories[userId] = { model, chat };
