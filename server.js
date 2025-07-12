@@ -11,22 +11,23 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // === Logger Setup ===
 const logDir = path.join(__dirname, "logs");
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
-
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.printf(info => `[${info.timestamp}] ${info.level.toUpperCase()}: ${info.message}`)
+    winston.format.printf(
+      (info) => `[${info.timestamp}] ${info.level.toUpperCase()}: ${info.message}`
+    )
   ),
   transports: [
     new winston.transports.File({
       filename: path.join(logDir, "error.log"),
-      level: "error"
+      level: "error",
     }),
     new winston.transports.File({
-      filename: path.join(logDir, "combined.log")
+      filename: path.join(logDir, "combined.log"),
     }),
-    new winston.transports.Console()
+    new winston.transports.Console(),
   ],
 });
 
@@ -51,7 +52,7 @@ const corsOptions = {
       logger.warn(`CORS blocked request from origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
-  }
+  },
 };
 
 // === Express Setup ===
@@ -61,7 +62,6 @@ app.use(bodyParser.json());
 
 // === AI Setup ===
 const ai = new GoogleGenerativeAI(API_KEY);
-
 const SYSTEM_PROMPT_PATH = path.join(__dirname, "system.instruction.prompt");
 let systemPromptText = "You are Chatlefy, an AI assistant made by Smart Tell Line...";
 if (fs.existsSync(SYSTEM_PROMPT_PATH)) {
@@ -91,7 +91,6 @@ app.post("/chat", async (req, res) => {
   }
 
   const cleanedMessage = message.trim();
-
   const isFirstAccess = !userHistories[userId];
   const isCorrectPassword = cleanedMessage === FIRST_USER_PASSWORD;
 
@@ -101,11 +100,21 @@ app.post("/chat", async (req, res) => {
   }
 
   if (isFirstAccess && isCorrectPassword) {
+    // === Changes Start Here ===
     const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash-preview-05-20",
-      generationConfig: { temperature: 1.0, topK: 1, topP: 1 },
+      model: "gemini-2.5-flash",
+      generationConfig: { 
+        temperature: 2.0, 
+        topK: 1, 
+        topP: 1,
+        // Thinking budget ko 0 set kiya hai
+        thinking_budget: 0 
+      },
+      // Google Search aur Code Execution tools add kiye hain
+      tools: [{ googleSearch: {} }, { codeExecution: {} }], 
       systemInstruction: { role: "system", parts: [{ text: systemPromptText }] },
     });
+    // === Changes End Here ===
 
     const chat = model.startChat({ history: [] });
     userHistories[userId] = { model, chat };
