@@ -103,7 +103,7 @@ app.post("/chat", async (req, res) => {
     const model = ai.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: {
-        temperature: 2.0,
+        temperature: 1.0,
         topK: 1,
         topP: 1,
         // 'thinking_budget: 0' yahan se hata diya gaya hai
